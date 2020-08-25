@@ -2,7 +2,7 @@ const functions = require("firebase-functions");
 // The Firebase Admin SDK to access Cloud Firestore.
 const admin = require("firebase-admin");
 const express = require("express");
-const { default: Axios } = require("axios");
+const { default: axios } = require("axios");
 const app = express();
 const cors = require("cors")({ origin: true });
 admin.initializeApp();
