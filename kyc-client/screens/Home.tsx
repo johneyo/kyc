@@ -25,13 +25,13 @@ const Home: React.FC<HomeProps> = ({ navigation, verifyBvn }) => {
   const [bvnModal, setBvnModal] = useState(false);
   const [bvnVerified, setBvnVerified] = useState(false);
   const [passportVerified, setPassportVerified] = useState(false);
-
+  const [emailVerified, setEmailVerified] = useState(false);
   const [passportModal, setPassportModal] = useState(false);
   const [uploading, setUploading] = useState(false);
   const user = auth.currentUser;
   const kycLevel = () => {
     let level = 0;
-    if (user && user.emailVerified) level = level + 1;
+    if (emailVerified) level = level + 1;
     if (bvnVerified) level = level + 1;
     if (passportVerified) level = level + 1;
     console.log("level", level);
@@ -49,13 +49,17 @@ const Home: React.FC<HomeProps> = ({ navigation, verifyBvn }) => {
     checkBvnVerified();
     checkPassportVerified();
   }, []);
+  useEffect(() => {
+    setEmailVerified(user.emailVerified);
+  });
   const checkBvnVerified = () => {
+    console.log("checking bvn");
     db.collection("kycusers")
       .doc(user ? user.uid : "uid")
       .onSnapshot(function (doc) {
         console.log("Current data: ", doc.data());
         const data = doc.data();
-        setBvnVerified(data.bvnVerified);
+        data && setBvnVerified(data.bvnVerified);
       });
   };
   const checkPassportVerified = () => {
@@ -64,7 +68,9 @@ const Home: React.FC<HomeProps> = ({ navigation, verifyBvn }) => {
       .onSnapshot(function (doc) {
         console.log("Current data: ", doc.data());
         const data = doc.data();
-        data.passport && setPassportVerified(data.passport.passportVerified);
+        data &&
+          data.passport &&
+          setPassportVerified(data.passport.passportVerified);
       });
   };
   const uploadImage = (val) =>
@@ -73,9 +79,9 @@ const Home: React.FC<HomeProps> = ({ navigation, verifyBvn }) => {
       uploadToFire(uri);
     });
   async function uploadToFire(uri) {
-    // Why are we using XMLHttpRequest? See:
-    // https://github.com/expo/expo/issues/2402#issuecomment-443726662
     const blob = await new Promise((resolve, reject) => {
+      console.log("uri", uri);
+
       const xhr = new XMLHttpRequest();
       xhr.onload = function () {
         resolve(xhr.response);
@@ -93,14 +99,13 @@ const Home: React.FC<HomeProps> = ({ navigation, verifyBvn }) => {
 
     let uploadTask = ref.put(blob);
     setPassportModal(true);
-    // We're done with the blob, close and release it
     uploadTask.on(
       "state_changed",
       (snapshot) => {
         const progress = Math.round(
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100
         );
-        console.log(progress);
+        console.log("progress", progress);
       },
       (error) => {
         console.log("upload error", error);
@@ -206,7 +211,7 @@ const Home: React.FC<HomeProps> = ({ navigation, verifyBvn }) => {
                 : null;
             };
             const overlay =
-              (index === 0 && user && user.emailVerified) ||
+              (index === 0 && emailVerified) ||
               (index === 1 && bvnVerified) ||
               (index === 2 && passportVerified);
             return (
@@ -230,7 +235,7 @@ const Home: React.FC<HomeProps> = ({ navigation, verifyBvn }) => {
                   <Text size="small" font="rubikMedium" bold color="#050171">
                     Level {index + 1}
                   </Text>
-                  <Image source={Img} />
+                  <Image source={Img} style={{ tintColor: "#050171" }} />
                   <Text size="tiny" font="rubikMedium" bold color="#050171">
                     {Name}
                   </Text>
@@ -293,22 +298,22 @@ export default connect(mapStateToProps, {
 const Services = [
   {
     Name: "Email Verification",
-    Img: require("../assets/images/washing.png"),
+    Img: require("../assets/images/mail.png"),
     link: "KycEmail",
   },
   {
     Name: "Bvn Verification",
-    Img: require("../assets/images/ironing.png"),
+    Img: require("../assets/images/bank.png"),
     link: "KycEmail",
   },
   {
     Name: "Passport Verification",
-    Img: require("../assets/images/fashion.png"),
+    Img: require("../assets/images/passport.png"),
     link: "KycEmail",
   },
   {
     Name: "Link Bank Account",
-    Img: require("../assets/images/basket.png"),
+    Img: require("../assets/images/chain.png"),
     link: "KycEmail",
   },
 ];
