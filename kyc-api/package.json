@@ -1,0 +1,14 @@
+{
+  "name": "kyc-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "firebase-admin": "^9.1.1",
+    "firebase-functions": "^3.11.0",
+    "request-promise": "^4.2.6"
+  }
+}
